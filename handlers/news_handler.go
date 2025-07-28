@@ -15,7 +15,7 @@ func GetNews(c *fiber.Ctx) error {
 	}
 	return c.JSON(news)
 }
-
+ 
 // POST /refresh
 func RefreshNews(c *fiber.Ctx) error {
 	// Fetch fresh from upstream API
@@ -34,7 +34,7 @@ func RefreshNews(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message":      "refreshed",
-		"saved_count":  len(saved),
+		"saved_count" :  len(saved),
 		"new_items":    saved,
 	})
 }

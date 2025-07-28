@@ -1,47 +1,71 @@
 package cmd
 
 import (
+	"context"
 	"log"
-
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Vishal-2029/config/db"
 	"github.com/Vishal-2029/models"
 	"github.com/Vishal-2029/pkg/fetcher"
 	natspub "github.com/Vishal-2029/pkg/nats"
 	natssub "github.com/Vishal-2029/pkg/nats"
+	"github.com/Vishal-2029/utility"
 )
 
+
 func Init() {
+	log := utility.InitLogger()
+	log.Println("Starting News Aggregator Service...")
+
+	// Setup shutdown signal listener
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	// Init NATS Publisher
-	err := natspub.InitPublisher("nats://localhost:4222")
-	if err != nil {
+	if err := natspub.InitPublisher("nats://localhost:4222"); err != nil {
 		log.Fatal("Failed to connect to NATS (pub):", err)
 	}
 
 	// Init DB
-	err = db.ConnectDB("root:root@tcp(localhost:3306)/newsdb")
-	if err != nil {
+	if err := db.ConnectDB("root:root@tcp(localhost:3306)/newsdb"); err != nil {
 		log.Fatal("DB connection failed:", err)
 	}
-	log.Println("✅ DB connected")
+	log.Println("DB connected")
 
 	// Start gRPC server
-	go StartGRPCServer()
+	go func() {
+		log.Println("Starting gRPC server...")
+		StartGRPCServer()
+	}()
 
 	// Start NATS Subscriber
-	err = natssub.StartSubscriber("nats://localhost:4222", handleNews)
-	if err != nil {
+	if err := natssub.StartSubscriber("nats://localhost:4222", handleNews); err != nil {
 		log.Fatal("NATS subscriber failed:", err)
 	}
+	log.Println("NATS subscriber running")
 
-	// Start Cron job to fetch news
-	go fetcher.StartCron()
+	// Start Cron Job
+	go func() {
+		log.Println("Cron job started")
+		fetcher.StartCron()
+	}()
 
-	select {} // keep the app running
+	// Wait for termination
+	<-ctx.Done()
+	stop()
+
+	// Log shutdown
+	log.Println("Stopped fetching news.")
+	log.Println("Stopping gRPC server.")
+	log.Println("Shutting down News Aggregator.")
 }
 
+
 func handleNews(news models.NewsItem) {
-	log.Println("🟢 Subscriber received:", news.Title)
+	log.Println("Subscriber received:", news.Title)
 	if err := db.SaveNews(news); err != nil {
 		log.Println("DB Save Error:", err)
 	}

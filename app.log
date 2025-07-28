@@ -1,0 +1,12 @@
+LOG: 2025/07/27 15:49:21 rest.go:23: DB connected
+LOG: 2025/07/27 15:49:21 rest.go:37: REST API running at http://localhost:3000
+LOG: 2025/07/27 15:49:28 rest.go:48: Shutting down REST API...
+LOG: 2025/07/27 15:49:29 rest.go:53: REST API stopped.
+LOG: 2025/07/27 15:49:37 main.go:21: 🚀 Starting News Aggregator Service...
+LOG: 2025/07/27 15:49:37 main.go:36: DB connected
+LOG: 2025/07/27 15:49:37 main.go:40: Starting gRPC server...
+LOG: 2025/07/27 15:49:37 main.go:48: NATS subscriber running
+LOG: 2025/07/27 15:49:37 main.go:52: ⏱️  Cron job started
+LOG: 2025/07/27 15:49:45 main.go:61: Stopped fetching news.
+LOG: 2025/07/27 15:49:45 main.go:62: Stopping gRPC server.
+LOG: 2025/07/27 15:49:45 main.go:63: Shutting down News Aggregator.
